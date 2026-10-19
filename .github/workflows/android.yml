@@ -29,14 +29,14 @@ concurrency:
 jobs:
   web:
     name: App web layer
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: Keep the screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-screenshots
           path: build/screenshots
@@ -69,16 +69,16 @@ jobs:
 
   apk:
     name: Build the APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: write   # to attach the APK to a release
     env:
       KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -90,28 +90,29 @@ jobs:
 
       - name: Version
         id: ver
-        # name: the portal version and this workflow's run number, e.g. 2.3.57
+        # name: the portal version and this workflow's run number, e.g. "2.3 (build 57)"
         # code: minutes since 2026, so every build installs over any earlier one
         run: |
           v=$(sed -n "s/.*const APP_VERSION = '\([^']*\)'.*/\1/p" src/portal.template.html | head -n 1)
           test -n "$v"
           echo "portal=$v" >> "$GITHUB_OUTPUT"
-          echo "name=$v.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "name=$v (build ${{ github.run_number }})" >> "$GITHUB_OUTPUT"
           echo "code=$(( ($(date -u +%s) - 1767225600) / 60 ))" >> "$GITHUB_OUTPUT"
           echo "file=DPR-Portal-v$v-build${{ github.run_number }}.apk" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: platform-tools platforms;android-35 build-tools;34.0.0
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.10.2'
+          cache-provider: basic   # the open-source cache, on actions/cache
 
       - name: Signing key
         if: env.KEYSTORE_B64 != ''
@@ -125,7 +126,7 @@ jobs:
 
       - name: Keep the temporary key between builds
         if: env.KEYSTORE_B64 == ''
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.android/debug.keystore
           key: android-debug-keystore-v1
@@ -151,15 +152,16 @@ jobs:
             if [ -n "$KEYSTORE_B64" ]; then echo "Signed with the project's release key."; else echo "Signed with a temporary key: for trying the app only."; fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - name: Keep the APK with the run
+        uses: actions/upload-artifact@v7
         with:
-          name: DPR-Portal-v${{ steps.ver.outputs.name }}
-          path: out/*.apk
+          path: out/${{ steps.ver.outputs.file }}
+          archive: false   # the APK itself, named after the file, not a zip
           if-no-files-found: error
 
       - name: Attach to the release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: out/*.apk
           fail_on_unmatched_files: true

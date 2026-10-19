@@ -14,7 +14,7 @@ Every push to `main` builds the app on GitHub (the [Android app workflow](../.gi
 
 **From a release (for site phones).** Open the repository's *Releases* page on the phone and tap the APK under *Assets*, e.g. `DPR-Portal-v2.3-build12.apk`.
 
-**From any build (for trying a change).** Open *Actions → Android app*, pick a run and download the artifact under *Artifacts*. It is a zip with the APK inside, and downloading it needs a GitHub sign-in.
+**From any build (for trying a change).** Open *Actions → Android app*, pick a run and download the APK listed under *Artifacts*. Downloading it needs a GitHub sign-in.
 
 **Making a release.** On GitHub choose *Releases → Draft a new release*. Type a new tag such as `v2.4` (it must start with `v`) and publish. The workflow builds the app and attaches the APK to the release a few minutes later. Pushing a `v…` tag from git does the same and creates the release.
 
@@ -116,7 +116,7 @@ gradle assembleRelease      # signed with DPR_KEYSTORE_PATH etc. if set, else th
 
 | Variable | Use |
 |---|---|
-| `DPR_VERSION_NAME` | version shown in Android's app info (CI: portal version + run number, e.g. `2.3.57`) |
+| `DPR_VERSION_NAME` | version shown in Android's app info (CI: portal version and run number, e.g. `2.3 (build 57)`) |
 | `DPR_VERSION_CODE` | a number that must go up with every build (CI: minutes since 2026) |
 | `DPR_KEYSTORE_PATH`, `DPR_KEYSTORE_PASSWORD`, `DPR_KEY_ALIAS`, `DPR_KEY_PASSWORD` | the signing key |
 

@@ -73,7 +73,7 @@ The app in `android/` is a thin shell around whichever portal file is packed int
 
 - **Every push to `main`** runs [`.github/workflows/android.yml`](../.github/workflows/android.yml), which checks the bridge and builds the APK. Download it from the run's *Artifacts*.
 - **Releasing:** after step 5 above, publish a GitHub release with a tag such as `v2.4`. The workflow attaches `DPR-Portal-v2.4-build<N>.apk` to it.
-- **Version:** the APK takes the portal's `APP_VERSION` plus the run number (e.g. `2.4.61`). Its version code goes up with every build, so each APK installs over the last one.
+- **Version:** the APK takes the portal's `APP_VERSION` and the run number, e.g. `2.4 (build 61)`. Its version code goes up with every build, so each APK installs over the last one.
 - **Signing:** the four `ANDROID_*` repository secrets, set up once. See [android.md](android.md#the-signing-key).
 
 Building locally, with your own project, and how the parts fit: [android.md](android.md#building-it-yourself).

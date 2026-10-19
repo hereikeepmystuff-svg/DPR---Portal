@@ -16,6 +16,7 @@ if not PORTAL.exists():
     sys.exit(f'{PORTAL} is missing: build the portal first (see the docstring).')
 spec = importlib.util.spec_from_file_location('prepare_assets', ROOT / 'android' / 'prepare_assets.py')
 pa = importlib.util.module_from_spec(spec); spec.loader.exec_module(pa)
+pa.IN_CI = False   # the offline cases below warn on purpose; keep that out of CI annotations
 checks = []
 
 
