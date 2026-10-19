@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- A light, bar-less theme in the portal's colours. The status and navigation bars take the page
+         colour with dark icons (set in MainActivity for each Android version). -->
+    <style name="Theme.DPR" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">@color/blue</item>
+        <item name="android:colorPrimaryDark">@color/surface</item>
+        <item name="android:colorAccent">@color/blue</item>
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+    </style>
+</resources>

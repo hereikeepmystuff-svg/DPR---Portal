@@ -1,0 +1,5 @@
+// The Android app is a thin native shell around the portal's single HTML file.
+// Build it with Gradle 8.10.2 and JDK 17 (see docs/android.md); CI does this in .github/workflows/android.yml.
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}

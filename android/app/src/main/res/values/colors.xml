@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The portal's own palette: the surface everything sits on, ink, and the primary blue -->
+    <color name="surface">#E8EDF4</color>
+    <color name="ink">#1F2B43</color>
+    <color name="blue">#2C56E0</color>
+    <color name="blue_deep">#2448CF</color>
+    <color name="blue_light">#7FA0FF</color>
+    <color name="blue_mid">#3D6BF4</color>
+</resources>

@@ -2,6 +2,25 @@
 
 Each version is also listed inside the portal: click the version number at the top right.
 
+## Android app — 20 Oct 2026
+The portal as an Android app, built on GitHub from v2.3. The portal itself is unchanged. See [docs/android.md](docs/android.md).
+- **Works offline:** the fonts and the Excel library are inside the app.
+- **Saving files:** setup files, entries files, backups and Excel exports go to *Downloads › DPR Portal*. From there you can share them (WhatsApp, email, Drive) or open them in another app.
+- **Opening files from other apps:** tap a setup or entries file in WhatsApp, email or Files to open it in the app.
+  - A setup file joins the project, or updates it.
+  - An entries file goes to the planning manager's import.
+- **Printing:** the printable DPR prints, or saves as a PDF, through Android.
+- **Back button:** closes dialogs, menus and settings first. Then it goes back to Progress, then to the top of the page, then leaves the app.
+- **Every screen size:** phones and tablets, upright or sideways, foldables and split screen.
+  - Turning the phone doesn't reload the page.
+  - Buttons and tabs are bigger for fingers.
+  - On a phone, the printable DPR scrolls sideways section by section.
+  - Text follows the phone's text size, within limits.
+- **Builds:**
+  - Every push to `main` builds an APK (*Actions → Android app*).
+  - Every release gets the APK attached.
+  - With the project's signing key stored as repository secrets, each version installs over the last.
+
 ## v2.3 — 19 Oct 2026 · Fits any project
 - **Your project's own words:** areas can be Towers, Blocks, Buildings, Zones or Sections; floors can be Levels, Floors or Stages; pours can be Pours, Bays or Segments. Labels follow everywhere, including the printable DPR and exports (Settings → Project).
 - **Money and numbers:** rupees in crore or lakh; dollars, dirhams, riyals, pounds or euro in millions; or your own unit. Indian or international digit grouping.

@@ -1,0 +1,79 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Set by CI: the portal's version (APP_VERSION) and a build number that only ever goes up,
+// so each new APK installs over the last one.
+def appVersionName = System.getenv('DPR_VERSION_NAME') ?: '2.3'
+def appVersionCode = (System.getenv('DPR_VERSION_CODE') ?: '1') as Integer
+
+// Release signing key, if one is configured (see docs/android.md). Without it the release APK is
+// signed with the debug key, which still installs but should not be published.
+def keystorePath = System.getenv('DPR_KEYSTORE_PATH')
+
+android {
+    namespace 'com.dprportal.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.dprportal.app'
+        minSdk 24
+        targetSdk 35
+        versionCode appVersionCode
+        versionName appVersionName
+    }
+
+    signingConfigs {
+        if (keystorePath) {
+            release {
+                storeFile file(keystorePath)
+                storePassword System.getenv('DPR_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('DPR_KEY_ALIAS')
+                keyPassword System.getenv('DPR_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig keystorePath ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'   // serves the portal from the app over https
+    implementation 'androidx.core:core:1.13.1'       // FileProvider, for sharing saved files on Android 7 to 9
+    // The AndroidX libraries bring the Kotlin standard library with them; keep its parts on one version.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+}
+
+// The portal itself is copied in by android/prepare_assets.py; stop early with a clear message if it isn't there.
+tasks.register('checkWebAssets') {
+    def index = file('src/main/assets/www/index.html')
+    doLast {
+        if (!index.exists()) {
+            throw new GradleException('The portal is missing from the app. Run first, from the repository root:\n' +
+                '  python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html\n' +
+                '  python3 android/prepare_assets.py build/portal.html android/app/src/main/assets/www')
+        }
+    }
+}
+tasks.named('preBuild') {
+    dependsOn 'checkWebAssets'
+}

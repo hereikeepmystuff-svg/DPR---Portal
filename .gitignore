@@ -11,3 +11,20 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+
+# Build output: tools/build.py --out build/..., and the portal packed into the Android app
+build/
+android/app/src/main/assets/www/
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.iml
+
+# Signing keys never go in the repository (see docs/android.md)
+*.jks
+*.keystore
+keystore.txt

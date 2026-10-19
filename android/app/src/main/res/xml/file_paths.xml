@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Files saved on Android 7 to 9 (getExternalFilesDir(DIRECTORY_DOWNLOADS)) -->
+    <external-files-path name="downloads" path="Download/" />
+</paths>

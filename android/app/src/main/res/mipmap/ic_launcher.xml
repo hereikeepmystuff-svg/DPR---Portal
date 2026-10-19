@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher icon for Android 7.x, which has no adaptive icons: the same mark on a rounded tile. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#E8EDF4"
+        android:strokeColor="#C9D2E0"
+        android:strokeWidth="2"
+        android:pathData="M28,8 L80,8 A20,20 0 0,1 100,28 L100,80 A20,20 0 0,1 80,100 L28,100 A20,20 0 0,1 8,80 L8,28 A20,20 0 0,1 28,8 Z" />
+    <path
+        android:fillColor="#A9C0FF"
+        android:pathData="M46.5,32.75 L61.5,32.75 A5,5 0 0,1 61.5,42.75 L46.5,42.75 A5,5 0 0,1 46.5,32.75 Z" />
+    <path
+        android:fillColor="#5C86F8"
+        android:pathData="M39,49 L69,49 A5,5 0 0,1 69,59 L39,59 A5,5 0 0,1 39,49 Z" />
+    <path
+        android:fillColor="#2C56E0"
+        android:pathData="M31.5,65.25 L76.5,65.25 A5,5 0 0,1 76.5,75.25 L31.5,75.25 A5,5 0 0,1 31.5,65.25 Z" />
+</vector>

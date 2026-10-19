@@ -1,5 +1,7 @@
 # DPR Portal
 
+[![Android app](https://github.com/hereikeepmystuff-svg/DPR---Portal/actions/workflows/android.yml/badge.svg)](https://github.com/hereikeepmystuff-svg/DPR---Portal/actions/workflows/android.yml)
+
 An offline, single-file web app for a construction site's **daily progress report (DPR)**.
 
 The planning manager sets the project up: BOQ, areas, floors and pours, the monthly plan and the project's own DPR workbook. Site engineers record each day's work:
@@ -21,6 +23,12 @@ It is one HTML file. There is nothing to install and no server: open it in Chrom
 3. The demo project *Riverside Residences* is built in. Its names, rates and quantities are all made up. Pick a date and an area, enter some quantities and press **Ctrl+S**.
 
 Everything you enter is kept in that browser on that device. To work as a team, see [Roles and sharing](docs/roles-and-sharing.md).
+
+## Android app
+
+The portal also comes as an Android app that works fully offline. It saves files to the phone's Downloads, where you can share them on WhatsApp or email. It opens setup and entries files straight from those apps, prints through Android, and fits phones and tablets of every size, upright or sideways.
+
+GitHub builds the APK on every push (*Actions → Android app*) and attaches it to every release. Before the app goes onto site phones, set up the project's signing key, so that later versions install over it without losing data. See [docs/android.md](docs/android.md).
 
 ## What it does
 
@@ -72,6 +80,7 @@ Everything you enter is kept in that browser on that device. To work as a team, 
 | [User guide](docs/user-guide.md) | Setting up a project and making the daily entries, for planning managers and engineers |
 | [Roles and sharing](docs/roles-and-sharing.md) | What each role can do, how setup and entries files move between devices, how merging works |
 | [Architecture](docs/architecture.md) | How the single file is organised: storage, data model, workbook engine, entry tracking |
+| [Android app](docs/android.md) | Installing and updating the app, its signing key, what it adds on a phone, building it |
 | [Development](docs/development.md) | Building, testing and releasing a new version |
 | [Changelog](CHANGELOG.md) | What changed in each version |
 
@@ -88,6 +97,9 @@ tools/make_demo_seed.py      regenerates src/seeds/demo.json
 tools/history/               the patch scripts that produced each version
 tests/smoke_demo.py          end-to-end test of the demo build
 tests/project/               deeper tests written against a project with its own DPR workbook
+tests/android_*.py           the Android app's packing and bridge
+android/                     the Android app: a WebView shell (Gradle project), bridge.js and prepare_assets.py
+.github/workflows/android.yml  builds the APK on GitHub
 docs/                        guides and screenshots
 ```
 
