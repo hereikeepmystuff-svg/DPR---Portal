@@ -1,0 +1,475 @@
+{
+ "items": [
+  {
+   "sno": 1,
+   "boq_id": "1.1",
+   "desc": "Excavation in all kinds of soil for foundations and basement, including disposal within 1 km",
+   "short": "Excavation in all soils",
+   "uom": "CUM",
+   "rate": 320,
+   "total_qty": 18500
+  },
+  {
+   "sno": 2,
+   "boq_id": "1.2",
+   "desc": "Backfilling around foundations with selected excavated earth in 200 mm compacted layers",
+   "short": "Backfilling with excavated earth",
+   "uom": "CUM",
+   "rate": 180,
+   "total_qty": 9200
+  },
+  {
+   "sno": 3,
+   "boq_id": "1.3",
+   "desc": "Pre-construction anti-termite treatment to foundations and plinth",
+   "short": "Anti-termite treatment",
+   "uom": "SQM",
+   "rate": 95,
+   "total_qty": 12400
+  },
+  {
+   "sno": 4,
+   "boq_id": "2.1",
+   "desc": "Plain cement concrete M15 in levelling course below foundations",
+   "short": "PCC M15 below foundations",
+   "uom": "CUM",
+   "rate": 6800,
+   "total_qty": 640
+  },
+  {
+   "sno": 5,
+   "boq_id": "2.2",
+   "desc": "Reinforced cement concrete M40 in raft foundation, excluding reinforcement",
+   "short": "RCC M40 raft",
+   "uom": "CUM",
+   "rate": 9600,
+   "total_qty": 4200
+  },
+  {
+   "sno": 6,
+   "boq_id": "2.3",
+   "desc": "Reinforced cement concrete M40 in columns and shear walls, excluding reinforcement",
+   "short": "RCC M40 columns & walls",
+   "uom": "CUM",
+   "rate": 10100,
+   "total_qty": 6800
+  },
+  {
+   "sno": 7,
+   "boq_id": "2.4",
+   "desc": "Reinforced cement concrete M35 in slabs and beams, excluding reinforcement",
+   "short": "RCC M35 slabs & beams",
+   "uom": "CUM",
+   "rate": 9400,
+   "total_qty": 9500
+  },
+  {
+   "sno": 8,
+   "boq_id": "2.5",
+   "desc": "TMT reinforcement Fe550D: cutting, bending, placing and binding",
+   "short": "Reinforcement Fe550D",
+   "uom": "MT",
+   "rate": 78500,
+   "total_qty": 3350
+  },
+  {
+   "sno": 9,
+   "boq_id": "2.6",
+   "desc": "Aluminium formwork system for walls and slabs, including props",
+   "short": "Aluminium formwork",
+   "uom": "SQM",
+   "rate": 410,
+   "total_qty": 86000
+  },
+  {
+   "sno": 10,
+   "boq_id": "2.7",
+   "desc": "Plywood shuttering to podium and transfer structures",
+   "short": "Conventional shuttering",
+   "uom": "SQM",
+   "rate": 520,
+   "total_qty": 21000
+  },
+  {
+   "sno": 11,
+   "boq_id": "3.1",
+   "desc": "AAC block masonry 200 mm thick in thin-bed mortar",
+   "short": "AAC blockwork 200 mm",
+   "uom": "SQM",
+   "rate": 1150,
+   "total_qty": 38000
+  },
+  {
+   "sno": 12,
+   "boq_id": "3.2",
+   "desc": "Gypsum or cement plaster 12 mm thick to internal walls",
+   "short": "Internal plaster 12 mm",
+   "uom": "SQM",
+   "rate": 310,
+   "total_qty": 92000
+  },
+  {
+   "sno": 13,
+   "boq_id": "3.3",
+   "desc": "Cement plaster 20 mm thick in two coats to external walls",
+   "short": "External plaster 20 mm",
+   "uom": "SQM",
+   "rate": 420,
+   "total_qty": 31000
+  },
+  {
+   "sno": 14,
+   "boq_id": "3.4",
+   "desc": "Membrane waterproofing to basement walls, wet areas and terraces",
+   "short": "Waterproofing",
+   "uom": "SQM",
+   "rate": 640,
+   "total_qty": 9800
+  },
+  {
+   "sno": 15,
+   "boq_id": "4.1",
+   "desc": "Vitrified tiles 800 x 800 mm laid on mortar bed, including skirting",
+   "short": "Vitrified tile flooring",
+   "uom": "SQM",
+   "rate": 1280,
+   "total_qty": 41000
+  },
+  {
+   "sno": 16,
+   "boq_id": "4.2",
+   "desc": "Two coats of acrylic emulsion over primer and putty",
+   "short": "Internal emulsion paint",
+   "uom": "SQM",
+   "rate": 165,
+   "total_qty": 120000
+  },
+  {
+   "sno": 17,
+   "boq_id": "4.3",
+   "desc": "Textured exterior paint system over primer",
+   "short": "External texture paint",
+   "uom": "SQM",
+   "rate": 260,
+   "total_qty": 34000
+  },
+  {
+   "sno": 18,
+   "boq_id": "4.4",
+   "desc": "Powder-coated aluminium sliding windows with glazing and hardware",
+   "short": "Aluminium windows",
+   "uom": "SQM",
+   "rate": 6900,
+   "total_qty": 5600
+  },
+  {
+   "sno": 19,
+   "boq_id": "4.5",
+   "desc": "Flush doors with hardwood frames, hardware and polish",
+   "short": "Flush doors with frames",
+   "uom": "NOS",
+   "rate": 14500,
+   "total_qty": 1150
+  },
+  {
+   "sno": 20,
+   "boq_id": "5.1",
+   "desc": "Sleeves, inserts and cut-outs for services, as directed",
+   "short": "MEP sleeves & inserts",
+   "uom": "NOS",
+   "rate": 850,
+   "total_qty": 3600
+  }
+ ],
+ "towers": [
+  "Tower A",
+  "Tower B",
+  "Tower C",
+  "Podium"
+ ],
+ "achieved": {
+  "Tower A": [
+   5550.0,
+   2760.0,
+   3720.0,
+   192.0,
+   1260.0,
+   1264.8,
+   1767.0,
+   623.1,
+   15996.0,
+   3906.0,
+   2052.0,
+   4968.0,
+   1674.0,
+   529.2,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   669.6
+  ],
+  "Tower B": [
+   5550.0,
+   2760.0,
+   3720.0,
+   192.0,
+   1260.0,
+   836.4,
+   1168.5,
+   412.05,
+   10578.0,
+   2583.0,
+   570.0,
+   1380.0,
+   465.0,
+   147.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   442.8
+  ],
+  "Tower C": [
+   5272.5,
+   2622.0,
+   3534.0,
+   182.4,
+   1197.0,
+   244.8,
+   342.0,
+   120.6,
+   3096.0,
+   756.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   129.6
+  ],
+  "Podium": [
+   1850.0,
+   920.0,
+   1240.0,
+   64.0,
+   420.0,
+   578.0,
+   807.5,
+   284.75,
+   7310.0,
+   1785.0,
+   1140.0,
+   2760.0,
+   930.0,
+   294.0,
+   205.0,
+   600.0,
+   170.0,
+   28.0,
+   5.75,
+   306.0
+  ]
+ },
+ "project": {
+  "contractor": "Demo Constructions Ltd",
+  "name": "Riverside Residences (demo)",
+  "employer": "Riverside Developers (demo)"
+ },
+ "machinery": [
+  {
+   "sno": 1,
+   "label": "Tower crane",
+   "uom": "No",
+   "default": 3
+  },
+  {
+   "sno": 2,
+   "label": "Passenger & material hoist",
+   "uom": "No",
+   "default": 3
+  },
+  {
+   "sno": 3,
+   "label": "Concrete pump",
+   "uom": "No",
+   "default": 1
+  },
+  {
+   "sno": 4,
+   "label": "Boom placer",
+   "uom": "No",
+   "default": 2
+  },
+  {
+   "sno": 5,
+   "label": "Transit mixer",
+   "uom": "No",
+   "default": 0
+  },
+  {
+   "sno": 6,
+   "label": "Excavator",
+   "uom": "No",
+   "default": 0
+  },
+  {
+   "sno": 7,
+   "label": "Backhoe loader",
+   "uom": "No",
+   "default": 1
+  },
+  {
+   "sno": 8,
+   "label": "Mobile crane",
+   "uom": "No",
+   "default": 1
+  },
+  {
+   "sno": 9,
+   "label": "Bar bending machine",
+   "uom": "Set",
+   "default": 4
+  },
+  {
+   "sno": 10,
+   "label": "Bar cutting machine",
+   "uom": "Set",
+   "default": 4
+  },
+  {
+   "sno": 11,
+   "label": "DG set",
+   "uom": "No",
+   "default": 2
+  },
+  {
+   "sno": 12,
+   "label": "Water tanker",
+   "uom": "No",
+   "default": 1
+  }
+ ],
+ "material_items": [
+  {
+   "key": "steel",
+   "label": "Steel",
+   "uom": "MT"
+  },
+  {
+   "key": "cement",
+   "label": "Cement",
+   "uom": "Bags"
+  },
+  {
+   "key": "rmc",
+   "label": "Ready-mix concrete",
+   "uom": "CUM"
+  },
+  {
+   "key": "blocks",
+   "label": "AAC blocks",
+   "uom": "Nos"
+  }
+ ],
+ "staff_roles": [
+  {
+   "label": "Project manager",
+   "default": 1
+  },
+  {
+   "label": "Construction manager",
+   "default": 1
+  },
+  {
+   "label": "Site engineers",
+   "default": 6
+  },
+  {
+   "label": "Quality engineers",
+   "default": 2
+  },
+  {
+   "label": "Safety officers",
+   "default": 2
+  },
+  {
+   "label": "Surveyors",
+   "default": 1
+  },
+  {
+   "label": "Store keepers",
+   "default": 1
+  },
+  {
+   "label": "Supervisors",
+   "default": 8
+  }
+ ],
+ "labour_day_trades": [
+  "Carpenter",
+  "Carpenter helper",
+  "Fitter",
+  "Fitter helper",
+  "Mason",
+  "Mason helper",
+  "Unskilled",
+  "Welder",
+  "Electrician",
+  "Plumber",
+  "Painter"
+ ],
+ "labour_night_trades": [
+  "Carpenter",
+  "Fitter",
+  "Mason",
+  "Unskilled"
+ ],
+ "labour_extra_roles": [
+  "Supervisor",
+  "Operator"
+ ],
+ "labour_presets_default": [
+  {
+   "contractor": "Alpha Formwork Co.",
+   "tower": "Tower A",
+   "category": "Formwork"
+  },
+  {
+   "contractor": "Alpha Formwork Co.",
+   "tower": "Tower B",
+   "category": "Formwork"
+  },
+  {
+   "contractor": "Beta Rebar Works",
+   "tower": "ALL",
+   "category": "Reinforcement"
+  },
+  {
+   "contractor": "Gamma Masonry",
+   "tower": "Tower C",
+   "category": "Masonry"
+  },
+  {
+   "contractor": "Delta Finishes",
+   "tower": "ALL",
+   "category": "Plaster & paint"
+  },
+  {
+   "contractor": "Omega MEP Services",
+   "tower": "ALL",
+   "category": "MEP"
+  }
+ ],
+ "baseline_as_of": "",
+ "daily_history": {},
+ "tower_daily_history": {},
+ "storage_key": "dpr_demo_v2",
+ "page_title": "DPR Portal (demo project)"
+}

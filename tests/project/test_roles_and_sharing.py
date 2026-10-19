@@ -1,0 +1,155 @@
+from playwright.sync_api import sync_playwright
+import pathlib, json, sys, hashlib, openpyxl, datetime
+import os as _os, pathlib as _pl, sys as _sys
+_HERE = _pl.Path(__file__).resolve().parent
+if len(_sys.argv) < 2: _sys.exit('usage: python3 %s <portal built from your project seed>.html  (see tests/README.md)' % _pl.Path(__file__).name)
+FILE = str(_pl.Path(_sys.argv[1]).resolve())
+SP = str(_pl.Path(_os.environ.get('DPR_TEST_OUT', _HERE.parent / 'output'))); _pl.Path(SP).mkdir(parents=True, exist_ok=True)
+FIXTURES = str(_HERE.parent / 'fixtures')
+URL = pathlib.Path(FILE).resolve().as_uri()
+D1, D2 = '2026-09-22', '2026-09-23'
+errors = []
+def log(*a): print(*a); sys.stdout.flush()
+def watch(pg, tag):
+    pg.on('pageerror', lambda e: errors.append(f'{tag} pageerror: {e}'))
+    pg.on('console', lambda m: errors.append(f'{tag} console: {m.text}') if m.type=='error' and 'fonts.g' not in m.text and 'ERR_' not in m.text else None)
+    pg.on('dialog', lambda d: (errors.append(f'{tag} NATIVE DIALOG: {d.message[:60]}'), d.dismiss()))
+def dlg(pg, text, timeout=8000):
+    pg.wait_for_selector('.dlg-overlay .dlg', timeout=timeout)
+    pg.click(f'.dlg-overlay .dlg button:has-text("{text}")')
+    pg.wait_for_timeout(250)
+def dlg_title(pg):
+    return pg.inner_text('.dlg-overlay .dlg-title') if pg.locator('.dlg-overlay .dlg-title').count() else None
+def set_date(pg, d):
+    pg.fill('#dateInput', d); pg.dispatch_event('#dateInput', 'change'); pg.wait_for_timeout(250)
+
+with sync_playwright() as p:
+    br = p.chromium.launch()
+    # ======================= A: planning manager device =======================
+    A = br.new_context(accept_downloads=True, viewport={'width':1300,'height':900}); a = A.new_page(); watch(a, 'A')
+    a.goto(URL, wait_until='load'); a.wait_for_timeout(700)
+    log('A welcome shown:', a.is_visible('#authOverlay') and a.locator('#wcSetup').count()==1)
+    a.click('#wcSetup'); a.wait_for_timeout(200)
+    a.fill('#pmName', 'Priya Planner'); a.fill('#pmPw', 'secret12'); a.fill('#pmPw2', 'secret12'); dlg(a, 'Create account')
+    a.wait_for_timeout(400)
+    log('A recovery dialog:', dlg_title(a)); code = a.inner_text('#rcCode'); dlg(a, 'I’ve saved it')
+    log('A chip:', a.inner_text('#userChip').replace('\n',' | '), '| auth hidden:', not a.is_visible('#authOverlay'))
+    log('A edit plan visible:', a.is_visible('#editPlanBtn'))
+    # add people
+    a.click('#settingsGearBtn'); a.wait_for_timeout(500)
+    log('A settings tabs:', a.eval_on_selector_all('.set-tabs button', 'e=>e.map(x=>x.textContent)'))
+    a.click('#tmAdd'); a.wait_for_timeout(200)
+    a.fill('#pfName', 'Ravi Engineer'); a.check('.pfZone[value="Tower E"]'); a.check('.pfZone[value="Tower D"]')
+    ravi_pin = a.eval_on_selector('#pfSecret', 'e=>e.value'); dlg(a, 'Add person')
+    log('A after add:', dlg_title(a)); dlg(a, 'OK')
+    a.click('#tmAdd'); a.wait_for_timeout(200)
+    a.fill('#pfName', 'Asha Progress'); a.check('.pfZone[value="Tower F"]'); a.uncheck('#pfSite'); a.fill('#pfSecret', '2468'); dlg(a, 'Add person'); dlg(a, 'OK')
+    log('A team rows:', a.eval_on_selector_all('.team-table tbody tr', 'e=>e.map(r=>r.innerText.split("\\t").slice(0,4).join(" / "))'))
+    # PM enters progress on D1 for Tower E (whole tower), then exports a setup file with entries
+    a.click('#closeSettingsX'); set_date(a, D1)
+    a.select_option('#towerSelect', label='Tower E'); a.wait_for_timeout(200)
+    a.fill('#entryBody tr[data-sno="1"] .today-input', '10'); a.click('#saveBtn'); a.wait_for_timeout(300)
+    log('A saved-by:', a.inner_text('#entrySavedBy'))
+    a.click('#settingsGearBtn'); a.wait_for_timeout(400)
+    with a.expect_download() as dl: a.click('#tmExportSetup')
+    setup_path = SP+'/setup.json'; dl.value.save_as(setup_path); dlg(a, 'OK')
+    pkg = json.load(open(setup_path))
+    log('setup file:', pkg['kind'], '| users:', [u['name'] for u in pkg['config']['team']['users']], '| entries progress keys:', list(pkg['entries']['progressLoc'].keys())[:3])
+    a.click('#closeSettingsX')
+
+    # ======================= B: engineer device =======================
+    B = br.new_context(accept_downloads=True, viewport={'width':1300,'height':900}); b = B.new_page(); watch(b, 'B')
+    b.goto(URL, wait_until='load'); b.wait_for_timeout(700)
+    with b.expect_file_chooser() as fc: b.click('#wcJoin')
+    fc.value.set_files(setup_path); b.wait_for_timeout(500)
+    log('B join dialog:', dlg_title(b)); dlg(b, 'OK'); b.wait_for_load_state('load'); b.wait_for_timeout(800)
+    log('B sign-in tiles:', b.eval_on_selector_all('.user-tile .nm', 'e=>e.map(x=>x.textContent)'))
+    b.click('.user-tile:has-text("Ravi Engineer")'); b.fill('#authSecret', '0000'); b.click('#authGo'); b.wait_for_timeout(300)
+    log('B wrong PIN:', b.inner_text('#authErr'))
+    b.fill('#authSecret', ravi_pin); b.click('#authGo'); b.wait_for_timeout(600)
+    log('B chip:', b.inner_text('#userChip').replace('\n',' | '), '| gear title:', b.get_attribute('#settingsGearBtn','title'))
+    log('B edit plan hidden:', not b.is_visible('#editPlanBtn'), '| tower groups:', b.eval_on_selector_all('#towerSelect optgroup', 'e=>e.map(g=>g.label+": "+[...g.children].map(o=>o.value).join(","))'))
+    log('B PM entry visible here (Tower E D1 item1=10):', b.evaluate("store.progress['Tower E|2026-09-22'] && store.progress['Tower E|2026-09-22'][1]"))
+    set_date(b, D2)
+    b.select_option('#towerSelect', label='Tower F'); b.wait_for_timeout(250)
+    log('B Tower F locked:', b.eval_on_selector('#saveBtn','e=>e.disabled'), '|', b.inner_text('#lockedDateNote')[:80])
+    b.select_option('#towerSelect', label='Tower E'); b.wait_for_timeout(250)
+    b.fill('#entryBody tr[data-sno="1"] .today-input', '5'); b.click('#saveBtn'); b.wait_for_timeout(300)
+    log('B saved-by:', b.inner_text('#entrySavedBy'))
+    b.click('.tab[data-tab="labour"]'); b.wait_for_timeout(200)
+    b.fill('#labourBody tr:first-child .contractorInput', 'Test Crew'); b.fill('#labourBody tr:first-child .labourCount >> nth=0', '7')
+    b.click('#saveLabourBtn'); b.wait_for_timeout(300)
+    log('B labour saved-by:', b.inner_text('#labourSavedBy'))
+    log('B labour header cells:', b.locator('#labourHeadRow th').count(), '| trade cells:', b.locator('#labourTradeHeader th').count(), '| row inputs:', b.locator('#labourBody tr:first-child .labourCount').count())
+    b.click('.tab[data-tab="sitelogs"]'); b.wait_for_timeout(200)
+    r = b.locator('#concreteBody tr').last
+    r.locator('.cDate').fill(D2); r.locator('.cTower').fill('E'); r.locator('.cStruct').fill('Slab L5'); r.locator('.cQty').fill('42')
+    b.click('#saveConcreteBtn'); b.wait_for_timeout(300)
+    log('B concrete row chip:', b.inner_text('#concreteBody tr:first-child td:first-child').replace('\n',' '), '| id:', b.eval_on_selector('#concreteBody tr:first-child', 'e=>e.dataset.id')[:3])
+    # send entries
+    b.click('#userChip'); b.wait_for_timeout(150); b.click('#userMenu button:has-text("Send my entries")'); b.wait_for_timeout(250)
+    b.fill('.dlg #seFrom', '2026-09-01'); b.dispatch_event('.dlg #seFrom', 'input'); b.wait_for_timeout(100)
+    log('B send preview:', b.inner_text('#seCount'))
+    with b.expect_download() as dl: dlg(b, 'Save file')
+    entries_path = SP+'/entries_ravi.json'; dl.value.save_as(entries_path)
+    ej = json.load(open(entries_path)); log('entries file:', ej['kind'], ej['from']['name'], ej['range'], '| stamps:', len(ej['data']['stamps']))
+    # Asha: progress only
+    b.click('#userChip'); b.click('#userMenu button:has-text("Switch user")'); b.wait_for_timeout(400)
+    b.click('.user-tile:has-text("Asha Progress")'); b.fill('#authSecret', '2468'); b.click('#authGo'); b.wait_for_timeout(500)
+    b.click('.tab[data-tab="labour"]'); b.wait_for_timeout(200)
+    log('B Asha labour fieldset disabled:', b.eval_on_selector('#fsLabour','e=>e.disabled'), '| banner:', b.is_visible('#panel-labour .ro-banner'), '| save btn visible:', b.is_visible('#saveLabourBtn'))
+    b.click('.tab[data-tab="entry"]'); b.select_option('#towerSelect', label='Tower F'); b.wait_for_timeout(200)
+    log('B Asha Tower F editable:', not b.eval_on_selector('#saveBtn','e=>e.disabled'))
+    # view only
+    b.click('#userChip'); b.click('#userMenu button:has-text("Sign out")'); b.wait_for_timeout(400)
+    b.click('#authView'); b.wait_for_timeout(400)
+    log('B viewer: save hidden:', not b.is_visible('#saveBtn'), '| inputs:', b.locator('#entryBody .today-input').count(), '| chip:', b.inner_text('#userChip').replace('\n',' | '))
+    b.click('#settingsGearBtn'); b.wait_for_timeout(200); log('B viewer gear ->', b.inner_text('#settingsPanel h2'))
+
+    # ======================= A: import Ravi's entries =======================
+    a.click('#settingsGearBtn'); a.wait_for_timeout(400)
+    with a.expect_file_chooser() as fc: a.click('#tmImportEntries')
+    fc.value.set_files(entries_path); a.wait_for_timeout(500)
+    log('A import preview:', a.inner_text('.dlg .merge-file').replace('\n',' | ')[:260])
+    dlg(a, 'Import'); a.wait_for_timeout(400)
+    log('A merged: Tower E D2 item1:', a.evaluate("store.progress['Tower E|2026-09-23'][1]"), '| labour D2 rows:', a.evaluate("(store.labour['2026-09-23']||[]).length"), '| concrete rows:', a.evaluate("store.concrete.length"), '| stamp by Ravi:', a.evaluate("userName(store.stamps['p|Tower E|2026-09-23|'].by)"))
+    log('A activity top:', a.inner_text('#tmActBody tr:first-child').replace('\t',' | ')[:160])
+    with a.expect_file_chooser() as fc: a.click('#tmImportEntries')
+    fc.value.set_files(entries_path); a.wait_for_timeout(500)
+    log('A re-import preview:', a.inner_text('.dlg .merge-file .hint').replace('\n',' '))
+    dlg(a, 'Cancel')
+    # settings save keeps pours (regression of the v2.0 bug)
+    a.click('.set-tabs button[data-pane="pours"]'); a.wait_for_timeout(150)
+    a.fill('#pourPaste', 'Tower\tLevel\tPour\tPlanned pour date\t13\nTower E\tL1\tP1\t20-09-2026\t120'); a.click('#pourPreviewBtn'); a.wait_for_timeout(150); a.click('#pourApplyBtn')
+    a.wait_for_load_state('load'); a.wait_for_timeout(900)
+    log('A still signed in after reload:', a.is_visible('#userChip') and not a.is_visible('#authOverlay'), '| pours:', a.evaluate('CFG.pours.length'))
+    a.click('#settingsGearBtn'); a.wait_for_timeout(300); a.click('.set-tabs button[data-pane="project"]'); a.wait_for_timeout(150)
+    log('A save bar visible on Project:', a.is_visible('#setSaveBar'))
+    a.click('#cfgSaveBtn'); a.wait_for_load_state('load'); a.wait_for_timeout(900)
+    log('A after settings save: pours kept:', a.evaluate('CFG.pours.length'), '| team kept:', a.evaluate('CFG.team.users.length'), '| history kept:', a.evaluate('Object.keys(CFG.tower_daily_history||{}).length>0'))
+    # export Excel
+    set_date(a, D2)
+    with a.expect_download(timeout=30000) as dl: a.click('#exportBtn')
+    xf = SP+'/export_v21.xlsx'; dl.value.save_as(xf)
+    dv = openpyxl.load_workbook(xf, data_only=True)['Data']; d = openpyxl.load_workbook(xf)['Data']
+    col = {dv.cell(row=6,column=c).value.strftime('%Y-%m-%d'): c for c in range(14,90) if isinstance(dv.cell(row=6,column=c).value, datetime.datetime)}
+    log('A export: Tower E item1 D1/D2 achieved:', d.cell(row=47, column=col[D1]+1).value, d.cell(row=47, column=col[D2]+1).value)
+    a.wait_for_timeout(300)
+    if a.locator('.dlg-overlay').count(): dlg(a, 'OK')
+    # DPR recorded by
+    a.click('.tab[data-tab="dpr"]'); a.wait_for_timeout(300)
+    log('A DPR sub:', a.inner_text('.dpr-sub')[-60:])
+
+    # ======================= C: migration from a v2.0 store =======================
+    C = br.new_context(viewport={'width':1300,'height':900}); c = C.new_page(); watch(c, 'C')
+    c.goto(URL, wait_until='load'); c.wait_for_timeout(300)
+    h = hashlib.sha256(b'oldpass').hexdigest()
+    c.evaluate("h => { localStorage.clear(); localStorage.setItem(STORAGE_KEY, JSON.stringify({settingsAuth:{hash:h}, progress:{'Tower D|2026-09-24':{13:{a:7,p:0}}}})); }", h)
+    c.reload(wait_until='load'); c.wait_for_timeout(800)
+    log('C sign-in tiles:', c.eval_on_selector_all('.user-tile .nm', 'e=>e.map(x=>x.textContent)'))
+    c.fill('#authSecret', 'oldpass'); c.click('#authGo'); c.wait_for_timeout(600)
+    log('C prompt:', dlg_title(c)); dlg(c, 'Create code'); log('C code dialog:', dlg_title(c)); dlg(c, 'I’ve saved it')
+    log('C entry kept:', c.evaluate("store.progress['Tower D|2026-09-24'][13].a"), '| role:', c.evaluate('ME.role'))
+    c.click('#settingsGearBtn'); c.wait_for_timeout(300); log('C settings opens without password:', c.inner_text('#settingsPanel h2'))
+    log('ERRORS:', errors)
+    br.close()

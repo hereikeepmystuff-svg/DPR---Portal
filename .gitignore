@@ -1,0 +1,13 @@
+# Project data stays out of the repository: BOQ rates, quantities, subcontractors, DPR workbooks
+seeds/private/
+*.private.html
+*.private.json
+
+# Test output
+tests/output/
+
+# Python / OS clutter
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
