@@ -3,7 +3,8 @@
 #   Every push to main, every pull request, or "Run workflow" by hand:
 #       the APK is attached to the run as an artifact (Actions tab -> the run -> Artifacts).
 #   A version tag (v2.4, v2.4.1 ...) or a published GitHub release:
-#       the APK is also attached to that release, as a direct download for phones.
+#       the APK is also attached to that release, as a direct download for phones, together with
+#       the portal itself as one offline HTML file (dpr_portal_vX.Y.html).
 #
 # Signing: add the four ANDROID_* secrets described in docs/android.md so every build is signed with
 # the same key and installs over the last one. Without them the APK is signed with a temporary key:
@@ -141,10 +142,12 @@ jobs:
           DPR_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: gradle assembleRelease --no-daemon --stacktrace
 
-      - name: Name the APK
+      - name: Name the files
+        # the APK, and for releases the portal itself under its versioned name (dpr_portal_vX.Y.html)
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/release/app-release.apk "out/${{ steps.ver.outputs.file }}"
+          cp build/portal.html "out/dpr_portal_v${{ steps.ver.outputs.portal }}.html"
           ls -l out
           {
             echo "**APK:** \`${{ steps.ver.outputs.file }}\` (version ${{ steps.ver.outputs.name }}, code ${{ steps.ver.outputs.code }})"
@@ -163,5 +166,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
-          files: out/*.apk
+          files: |
+            out/*.apk
+            out/*.html
           fail_on_unmatched_files: true

@@ -16,7 +16,7 @@ Every push to `main` builds the app on GitHub (the [Android app workflow](../.gi
 
 **From any build (for trying a change).** Open *Actions → Android app*, pick a run and download the APK listed under *Artifacts*. Downloading it needs a GitHub sign-in.
 
-**Making a release.** On GitHub choose *Releases → Draft a new release*. Type a new tag such as `v2.4` (it must start with `v`) and publish. The workflow builds the app and attaches the APK to the release a few minutes later. Pushing a `v…` tag from git does the same and creates the release.
+**Making a release.** On GitHub choose *Releases → Draft a new release*. Type a new tag such as `v2.4` (it must start with `v`) and publish. A few minutes later the workflow attaches the APK to the release, together with the portal itself as one offline file (`dpr_portal_v2.4.html`). Pushing a `v…` tag from git does the same and creates the release.
 
 **Installing.** Open the downloaded APK on the phone.
 - The first time, Android asks whether the app you downloaded it with (Chrome, Files, WhatsApp) may install apps. Allow it, go back and tap *Install*.
