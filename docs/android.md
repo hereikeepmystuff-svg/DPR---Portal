@@ -59,6 +59,8 @@ It asks for a password and a few details about your organisation. Keep the `.jks
 
 The next build is signed with this key. Delete `keystore.txt` afterwards.
 
+A release published before the key was set up still carries an APK with the temporary key. To replace it, open that release's run under *Actions → Android app* and choose *Re-run all jobs*. The new APK, signed with the project key, takes the place of the old one in the release.
+
 An app installed earlier with the temporary key can't be updated to one signed with the project key. Before switching, take a full backup on that phone (*Settings → Data*), uninstall, install the new APK and restore the backup.
 
 ## Using the app
