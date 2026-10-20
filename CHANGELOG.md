@@ -2,6 +2,19 @@
 
 Each version is also listed inside the portal: click the version number at the top right.
 
+## v3.0 — 20 Oct 2026 · SharePoint sync
+See [docs/sharepoint.md](docs/sharepoint.md).
+- **SharePoint sync:** the planning manager connects the project to a SharePoint folder once (Settings → Team & access).
+  - Site engineers join with an invite link and sign in with their Microsoft work account.
+  - From then on, the setup and everyone's entries stay in step by themselves. No setup or entries files are needed.
+- **Works offline:** entries are saved on the device first and sent when there is a connection. A light at the top shows when everything is in step, and what is waiting.
+- **No PIN on your own phone:** after the Microsoft sign-in, the portal recognises each person by their work email. A shared site account still works: pick your name and enter your PIN.
+- **Roles backed by SharePoint:** with edit access to the `entries` folder only, engineers can't change the setup on the server either.
+- **Setup changes arrive by themselves.** They apply once what you're typing is saved, and the portal comes back to the same tab and day.
+- **The portal is also a website** (GitHub Pages). It works offline and can be installed to a phone's home screen. The Android app signs in to Microsoft inside the app and opens invite links.
+- **Files still work:** setup and entries files work as before for anyone who isn't syncing.
+- **Backups carry the workbook:** a full data backup now includes the project's DPR workbook, built in or imported, so a backup can move a project from a portal file to the website or the app. If a workbook file goes missing, *Settings → Workbook & periods* offers to choose it again, keeping everything entered.
+
 ## Android app — 20 Oct 2026
 The portal as an Android app, built on GitHub from v2.3. The portal itself is unchanged. See [docs/android.md](docs/android.md).
 - **Works offline:** the fonts and the Excel library are inside the app.

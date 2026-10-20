@@ -10,6 +10,7 @@ This guide follows the year of a project: the **planning manager** sets it up, *
 - [6. Month end: closing and rolling over](#6-month-end-closing-and-rolling-over)
 - [7. Keyboard shortcuts](#7-keyboard-shortcuts)
 - [8. Backups and moving to a new device](#8-backups-and-moving-to-a-new-device)
+- [9. SharePoint sync](#9-sharepoint-sync)
 
 ## 1. First run
 
@@ -107,8 +108,10 @@ On the Progress tab, **Edit monthly plan** (planning managers only) opens a grid
   - **Can enter site-wide reports** lets them fill in labour, machinery, material & staff and the site logs. Untick it for someone who should enter progress only.
   - **New PIN** sets a fresh PIN when someone forgets theirs.
   - **Remove** stops a person signing in. Their saved entries stay, still marked with their name.
+  - **Work email** (optional): with SharePoint sync, the portal recognises the person by it after their Microsoft sign-in, so they need no PIN on their own device.
 - **Who can do what.** The full permissions table. See [Roles and sharing](roles-and-sharing.md).
-- **Share with engineers.**
+- **SharePoint sync** (v3.0). Connect the project to a SharePoint folder once. Engineers then join with an invite link and sign in with Microsoft, and the setup and everyone's entries stay in step by themselves. See [9. SharePoint sync](#9-sharepoint-sync).
+- **Share with engineers** (without SharePoint sync).
   1. **Save setup file** packs everything an engineer's copy needs: BOQ, towers, floors & pours, plan, periods, the team and its PINs, and the project workbook. Tick *Include everyone's entries so far* so their cumulative figures are complete. Send the file by email, WhatsApp or a shared folder.
   2. **Import entries files…** brings engineers' work in. You can pick several files at once. A preview shows what's new, updated, the same or newer on your copy before anything is merged.
 
@@ -241,7 +244,7 @@ When the planning manager sends a new setup file, open it from **My account** �
 
 Everything lives in the browser on the device where it was entered. Planning managers should keep regular backups:
 
-- **Settings → Data → Export full data backup** saves everything on the device: setup, team, entries and history. **Import full data backup** either merges it in or replaces what's there.
+- **Settings → Data → Export full data backup** saves everything on the device: setup, team, entries, history and the project's DPR workbook. **Import full data backup** either merges it in or replaces what's there.
 - **Export this configuration only** carries a project's setup to a genuinely new project, without entries or the team.
 - **Start a blank project** and **Reset to the built-in project data** clear all daily entries in this browser, but keep the team.
 
@@ -255,3 +258,21 @@ A full data backup also works, and carries the activity log too:
 1. On the new device, set up a temporary planning-manager account.
 2. Go to Settings → Data → **Import full data backup** → **Replace everything**.
 3. Sign in with your usual password.
+
+## 9. SharePoint sync
+
+With SharePoint sync on, there are no files to send. Everything stays in step through the project's SharePoint folder. Each device still keeps its own full copy and works offline.
+
+**Planning manager, once:**
+1. Settings → Team & access → **SharePoint sync**: paste the project folder's link and sign in with Microsoft.
+2. Add everyone's **work email** under People.
+3. Send the **invite link**.
+
+**Engineers, once:** open the invite link and choose **Sign in with Microsoft**. From then on, what they save is sent by itself, and everyone else's entries arrive every couple of minutes.
+
+**The light** next to your name shows *Synced* with the time, *Syncing…*, *Offline*, *Sign in to sync* or *No access*. Tap it for details and **Sync now**.
+
+**Setup changes** by the planning manager reach everyone by themselves. If you are typing, they apply after you save.
+
+Your IT team registers the portal with Microsoft 365 once beforehand. [SharePoint sync](sharepoint.md) has the steps for IT, the planning manager and engineers, and what to do when something goes wrong.
+

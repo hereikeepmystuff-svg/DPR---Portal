@@ -16,7 +16,7 @@
   var css = [
     'html{-webkit-text-size-adjust:100%; text-size-adjust:100%; -webkit-tap-highlight-color:transparent;}',
     'html, body{overscroll-behavior-y:none;}',
-    '.tab, .subtab, .btn, .dchip, .pill-group button, .set-tabs button, .user-chip, .ver-pill, .gear-btn, .step-btn, .user-tile, .linkbtn{-webkit-user-select:none; user-select:none;}',
+    '.tab, .subtab, .btn, .dchip, .pill-group button, .set-tabs button, .user-chip, .sync-chip, .ver-pill, .gear-btn, .step-btn, .user-tile, .linkbtn{-webkit-user-select:none; user-select:none;}',
     '.dlg{max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px);}',
     /* fingers need bigger targets than a mouse */
     '@media (pointer:coarse){',
@@ -102,6 +102,7 @@
   }
   window.__dprBack = function(){
     if(locked()) return 'exit';                         // nothing behind the lock screen is closed
+    if(document.getElementById('syncBusy')) return 'handled';   // connecting or joining: let it finish
     if(document.querySelector('.dlg-overlay')){
       document.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
       return 'handled';

@@ -36,7 +36,7 @@ These rules are checked in the browser. They keep people to their job and make e
 
 ## Working on several devices
 
-There is no server. Each person works on their own copy of the portal file, on a laptop, tablet or phone, and two kinds of file keep the copies in step:
+Each person works on their own copy of the portal, on a laptop, tablet or phone. With **SharePoint sync** (v3.0), the copies stay in step through the project's SharePoint folder by themselves; see [below](#sharepoint-sync) and [SharePoint sync](sharepoint.md). Without it there is no server, and two kinds of file keep the copies in step:
 
 ```
                      setup file  (BOQ, towers, pours, plan, periods, team, workbook, optionally everyone's entries)
@@ -70,6 +70,26 @@ Send a new setup file after any change to base data. The Team & access card says
 Made from **Send my entries…** and named `<project>_entries_<name>_<to-date>.json`. It holds the sender's entries for a date range, with who saved each one and when. Records that arrived in a setup file and were not changed afterwards are left out, so engineers don't send the planning manager's own data back.
 
 The planning manager imports one or more of these from **Team & access → Import entries files…**. Before anything changes, a preview shows each file's counts: *new*, *updated*, *removed*, *same*, *newer here* and *skipped*.
+
+### SharePoint sync
+
+With sync on, the same two kinds of content travel through the project's SharePoint folder instead of by hand:
+- the setup, as `dpr-project.json`, written by planning managers;
+- each device's entries, as `entries/<month>__<device>.json`.
+
+Merging follows exactly the rules below.
+
+**Roles on the server.** The folder's SharePoint permissions enforce the roles:
+
+| Role | Folder access |
+|---|---|
+| Planning managers | Edit on the whole folder |
+| Site engineers | Edit on `entries` and View on the rest, so SharePoint itself refuses a change to the setup |
+| View only | View |
+
+**Signing in.**
+- People sign in with their Microsoft work account. The portal knows them by the work email on their team entry, without a PIN.
+- A shared site account still works: sign in with it, then pick your name and enter your PIN.
 
 ### How merging decides
 

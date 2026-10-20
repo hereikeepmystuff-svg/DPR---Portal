@@ -1,0 +1,50 @@
+/* ---------- SharePoint sync (v3.0) ---------- */
+.sync-chip{display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border:0; border-radius:999px; background:var(--bg); box-shadow:var(--raise-sm);
+  font-family:var(--mono); font-size:11px; letter-spacing:.04em; color:var(--ink-soft); cursor:pointer; white-space:nowrap; max-width:220px;}
+.sync-chip span{overflow:hidden; text-overflow:ellipsis;}
+.sync-chip:active{box-shadow:var(--inset-sm);}
+.sync-chip:focus-visible{outline:none; box-shadow:var(--raise-sm), var(--ring);}
+.sync-chip .led{flex:none; width:8px; height:8px; border-radius:50%; background:var(--green-hi); box-shadow:0 0 8px var(--green-hi);}
+.sync-chip.busy .led{background:var(--blue-hi); box-shadow:0 0 8px var(--blue-hi); animation:syncPulse 1s ease-in-out infinite;}
+.sync-chip.warn .led, .sync-chip.note .led{background:var(--amber-hi); box-shadow:0 0 8px var(--amber-hi);}
+.sync-chip.warn, .sync-chip.note{color:var(--amber);}
+.sync-chip.bad .led{background:var(--red-hi); box-shadow:0 0 8px var(--red-hi);}
+.sync-chip.bad{color:var(--red);}
+.sync-chip.off .led{background:var(--dot); box-shadow:none;}
+@keyframes syncPulse{50%{opacity:.3;}}
+.sync-rows{display:grid; gap:10px; margin:2px 0 14px;}
+.sync-rows > div{display:grid; grid-template-columns:150px minmax(0,1fr); gap:2px 14px; align-items:baseline;}
+.sync-rows > div > span{font-size:12px; color:var(--ink-soft);}
+.sync-rows > div > b{min-width:0; overflow-wrap:anywhere;}
+.sync-rows > div > small, .sync-rows > div > a{grid-column:2; font-size:12px; color:var(--ink-soft);}
+.sync-rows a{color:var(--blue-deep);}
+.sp-badge{display:inline-block; margin-left:8px; padding:3px 9px; border-radius:999px; font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+  text-transform:uppercase; vertical-align:middle; background:var(--bg-2); color:var(--ink-soft); box-shadow:var(--inset-xs);}
+.sp-badge.on{background:var(--green-soft); color:var(--green);}
+.sp-form{max-width:640px;}
+.sp-form .dlg-field input{width:100%;}
+.sp-adv{margin:4px 0 14px; padding:10px 14px; border-radius:var(--radius-sm); background:var(--bg-2); box-shadow:var(--inset-xs);}
+.sp-adv summary{cursor:pointer; font-weight:700; font-size:13px; color:var(--ink-soft);}
+.sp-adv[open] summary{margin-bottom:10px;}
+.sp-adv code{font-family:var(--mono); font-size:11.5px; overflow-wrap:anywhere;}
+.sp-actions{display:flex; gap:10px; flex-wrap:wrap;}
+.invite-row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:6px 0 12px;}
+.invite-link{flex:1 1 260px; min-width:0; font-family:var(--mono); font-size:12px;}
+.invite-list{margin:0; padding-left:20px; font-size:13px; color:var(--ink-soft);}
+.invite-list li{margin:4px 0;}
+.join-actions{display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 4px;}
+.join-actions a.btn{text-decoration:none; display:inline-flex; align-items:center;}
+.choice-card .btn + .btn{margin-top:2px;}
+.busy-veil{position:fixed; inset:0; z-index:118; display:flex; align-items:center; justify-content:center; padding:16px;
+  background:var(--veil); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px);}
+.busy-veil .box{display:flex; align-items:center; gap:14px; padding:20px 24px; border-radius:20px; background:var(--bg); box-shadow:var(--raise-lg); font-weight:700;}
+.spinner{flex:none; width:22px; height:22px; border-radius:50%; border:3px solid var(--blue-soft); border-top-color:var(--blue); animation:syncSpin .9s linear infinite;}
+@keyframes syncSpin{to{transform:rotate(360deg);}}
+.team-email{display:block; margin:2px 0 0 38px; font-size:12px; color:var(--ink-soft); overflow-wrap:anywhere;}
+@media (max-width:600px){
+  .sync-chip{padding:8px 11px; max-width:150px;}
+  .sync-rows > div{grid-template-columns:minmax(0,1fr);}
+  .sync-rows > div > small, .sync-rows > div > a{grid-column:1;}
+}
+@media (prefers-reduced-motion: reduce){ .spinner, .sync-chip.busy .led{animation:none;} }
+@media print{ .sync-chip, .busy-veil{display:none !important;} }

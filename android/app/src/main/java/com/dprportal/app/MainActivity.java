@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
@@ -64,7 +65,9 @@ import java.io.OutputStream;
  *    Downloads/DPR Portal and can be opened or shared straight away;
  *  - setup and entries files can be opened in the app from WhatsApp, email or a file manager;
  *  - "Print / Save as PDF" uses Android printing;
- *  - the back button closes dialogs and menus first, then returns to Progress, then leaves.
+ *  - the back button closes dialogs and menus first, then returns to Progress, then leaves;
+ *  - Microsoft sign-in for SharePoint sync happens inside the app, and dprportal://join invite links
+ *    opened from a browser come straight to the app.
  */
 public class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
@@ -77,7 +80,10 @@ public class MainActivity extends Activity {
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
     private Uri pendingOpen;
+    private String pendingJoin;
     private boolean pageReady;
+    /** Set by the page just before it goes to Microsoft's sign-in, until it comes back. */
+    private volatile boolean signingIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +150,12 @@ public class MainActivity extends Activity {
         w.setBackgroundColor(SURFACE);
         w.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
+        // Microsoft's sign-in keeps its session in cookies; the page renews a sign-in each day in a
+        // hidden frame, which needs them as third-party cookies.
+        CookieManager cookies = CookieManager.getInstance();
+        cookies.setAcceptCookie(true);
+        cookies.setAcceptThirdPartyCookies(w, true);
+
         final WebViewAssetLoader assets = new WebViewAssetLoader.Builder()
                 .setDomain(HOST)
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -158,7 +170,10 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri url = request.getUrl();
-                if (HOST.equals(url.getHost())) return false;
+                if (HOST.equals(url.getHost()) || !request.isForMainFrame()) return false;
+                String scheme = url.getScheme();
+                // Microsoft's sign-in, and any company sign-in page it hands on to, stays in the app
+                if (signingIn && ("https".equals(scheme) || "http".equals(scheme))) return false;
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, url));
                 } catch (ActivityNotFoundException e) {
@@ -175,7 +190,11 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 pageReady = true;
-                deliverPendingFile();
+                if (url != null && HOST.equals(Uri.parse(url).getHost())) {
+                    signingIn = false;
+                    deliverPendingFile();
+                    deliverPendingJoin();
+                }
             }
 
             @Override
@@ -260,6 +279,14 @@ public class MainActivity extends Activity {
             moveTaskToBack(true);   // still loading: step aside, as on the last back press
             return;
         }
+        String current = web.getUrl();
+        if (current != null && !HOST.equals(Uri.parse(current).getHost())) {
+            // on Microsoft's sign-in pages: back to the portal
+            signingIn = false;
+            if (web.canGoBack()) web.goBack();
+            else web.loadUrl(START_URL);
+            return;
+        }
         web.evaluateJavascript("(window.__dprBack ? window.__dprBack() : 'exit')", value -> {
             if (value != null && value.contains("handled")) return;
             moveTaskToBack(true);   // keep the app (and anything typed) as it is, just out of the way
@@ -278,6 +305,12 @@ public class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     private void handleIntent(Intent intent) {
         if (intent == null) return;
+        Uri data = intent.getData();
+        if (Intent.ACTION_VIEW.equals(intent.getAction()) && data != null && "dprportal".equals(data.getScheme())) {
+            pendingJoin = data.toString();   // an invite link: dprportal://join?p=…
+            if (pageReady) deliverPendingJoin();
+            return;
+        }
         Uri file = null;
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             file = intent.getData();
@@ -307,6 +340,16 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> toast("Couldn't open that file: " + e.getMessage()));
             }
         }).start();
+    }
+
+    private void deliverPendingJoin() {
+        final String link = pendingJoin;
+        if (link == null || web == null) return;
+        pendingJoin = null;
+        final String js = "window.__dprJoin && window.__dprJoin(" + JSONObject.quote(link) + ")";
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (web != null) web.evaluateJavascript(js, null);
+        }, 700);
     }
 
     private String displayName(Uri file) {
@@ -446,6 +489,11 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void beginSignIn() {
+            signingIn = true;
+        }
+
+        @JavascriptInterface
         public String version() {
             return BuildConfig.VERSION_NAME;
         }
@@ -457,6 +505,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if (web != null) web.onPause();
+        CookieManager.getInstance().flush();
     }
 
     @Override

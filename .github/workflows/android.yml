@@ -2,13 +2,16 @@
 #
 #   Every push to main, every pull request, or "Run workflow" by hand:
 #       the APK is attached to the run as an artifact (Actions tab -> the run -> Artifacts).
-#   A version tag (v2.4, v2.4.1 ...) or a published GitHub release:
+#   A version tag (v3.0, v3.0.1 ...) or a published GitHub release:
 #       the APK is also attached to that release, as a direct download for phones, together with
 #       the portal itself as one offline HTML file (dpr_portal_vX.Y.html).
 #
 # Signing: add the four ANDROID_* secrets described in docs/android.md so every build is signed with
 # the same key and installs over the last one. Without them the APK is signed with a temporary key:
 # fine for trying the app, but don't install it on site phones (see docs/android.md).
+# SharePoint sync: the repository variables DPR_MS_CLIENT_ID (and DPR_MS_TENANT) build the Microsoft
+# app registration into the APK, as for the website (docs/sharepoint.md).
+# The app's web side is tested in tests.yml.
 
 name: Android app
 
@@ -28,46 +31,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  web:
-    name: App web layer
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.12'
-
-      - name: Build the portal and pack it for the app
-        run: |
-          python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html
-          python3 android/prepare_assets.py build/portal.html android/app/src/main/assets/www
-
-      - name: Check the packing (offline)
-        run: python3 tests/android_assets.py
-
-      - name: Install Playwright and Chromium
-        run: |
-          python3 -m pip install --quiet playwright
-          python3 -m playwright install --with-deps chromium
-
-      - name: Check the bridge at phone, tablet and landscape sizes
-        env:
-          DPR_SHOTS: build/screenshots
-        run: python3 tests/android_bridge.py
-
-      - name: Keep the screenshots
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: app-screenshots
-          path: build/screenshots
-          if-no-files-found: ignore
-          retention-days: 14
-
   apk:
     name: Build the APK
     runs-on: ubuntu-24.04
@@ -84,14 +47,20 @@ jobs:
           python-version: '3.12'
 
       - name: Build the portal and pack it for the app
-        # fonts and the Excel library are downloaded into the app so it works offline
+        # fonts and the Excel library are downloaded into the app so it works offline; invite links made
+        # in the app point at the website (pages.yml)
+        env:
+          CLIENT_ID: ${{ vars.DPR_MS_CLIENT_ID }}
+          TENANT: ${{ vars.DPR_MS_TENANT }}
         run: |
-          python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html
+          url="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
+          python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html --portal-url "$url" \
+            ${CLIENT_ID:+--ms-client-id "$CLIENT_ID"} ${TENANT:+--ms-tenant "$TENANT"}
           python3 android/prepare_assets.py build/portal.html android/app/src/main/assets/www
 
       - name: Version
         id: ver
-        # name: the portal version and this workflow's run number, e.g. "2.3 (build 57)"
+        # name: the portal version and this workflow's run number, e.g. "3.0 (build 57)"
         # code: minutes since 2026, so every build installs over any earlier one
         run: |
           v=$(sed -n "s/.*const APP_VERSION = '\([^']*\)'.*/\1/p" src/portal.template.html | head -n 1)

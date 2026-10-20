@@ -1,0 +1,93 @@
+# Publishes the portal as a website with GitHub Pages: https://<owner>.github.io/<repository>/
+# Browsers need it at a web address for Microsoft sign-in (SharePoint sync). It works offline once
+# opened, and can be installed to a phone's home screen or a computer's apps.
+#
+# One-time setting: repository Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Optional repository variables (Settings -> Secrets and variables -> Actions -> Variables):
+#   DPR_MS_CLIENT_ID   the Application (client) ID IT registered for the portal (docs/sharepoint.md)
+#   DPR_MS_TENANT      the directory (tenant) ID or domain, if IT asks for it
+# With the client ID built in, planning managers and engineers never have to type it.
+
+name: Website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the website
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      on: ${{ steps.pages.outputs.on }}
+    steps:
+      - name: Is GitHub Pages turned on?
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          kind=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || true)
+          if [ "$kind" = "workflow" ]; then
+            echo "on=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on=false" >> "$GITHUB_OUTPUT"
+            msg="Turn it on once: repository Settings -> Pages -> Build and deployment -> Source: GitHub Actions. Then run this workflow again (Actions -> Website -> Run workflow)."
+            echo "::notice title=GitHub Pages isn't publishing from Actions yet::$msg"
+            echo "**Not published:** $msg" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.pages.outputs.on == 'true'
+
+      - uses: actions/setup-python@v7
+        if: steps.pages.outputs.on == 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Build the portal and pack it for the web
+        if: steps.pages.outputs.on == 'true'
+        env:
+          CLIENT_ID: ${{ vars.DPR_MS_CLIENT_ID }}
+          TENANT: ${{ vars.DPR_MS_TENANT }}
+        run: |
+          url="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
+          python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html --portal-url "$url" \
+            ${CLIENT_ID:+--ms-client-id "$CLIENT_ID"} ${TENANT:+--ms-tenant "$TENANT"}
+          python3 android/prepare_assets.py build/portal.html build/site --web
+          {
+            echo "**Address:** $url"
+            echo
+            if [ -n "$CLIENT_ID" ]; then echo "Microsoft app (client) ID built in: \`$CLIENT_ID\`"; else echo "No Microsoft app (client) ID built in: the planning manager enters it when connecting SharePoint."; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/configure-pages@v6
+        if: steps.pages.outputs.on == 'true'
+
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.pages.outputs.on == 'true'
+        with:
+          path: build/site
+
+  deploy:
+    name: Publish
+    needs: build
+    if: needs.build.outputs.on == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

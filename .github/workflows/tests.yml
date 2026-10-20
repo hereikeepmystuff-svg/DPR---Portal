@@ -1,0 +1,69 @@
+# Runs the browser tests on every push and pull request:
+#   smoke_demo.py     a week of work on the demo build, with setup and entries files
+#   sync_e2e.py       SharePoint sync between devices, against a stand-in for Microsoft 365
+#   android_assets.py packing the portal into the Android app (no network)
+#   android_bridge.py the Android app's bridge: files, printing, back button, five screen sizes
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright and Chromium
+        run: |
+          python3 -m pip install --quiet playwright openpyxl
+          python3 -m playwright install --with-deps chromium
+
+      - name: Build the demo portal
+        run: python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html
+
+      - name: Smoke test
+        env:
+          DPR_SHOTS: build/screenshots/smoke
+        run: python3 tests/smoke_demo.py build/portal.html
+
+      - name: SharePoint sync
+        env:
+          DPR_SHOTS: build/screenshots/sync
+        run: python3 tests/sync_e2e.py build/portal.html
+
+      - name: Android app packing
+        run: |
+          python3 tests/android_assets.py
+          python3 android/prepare_assets.py build/portal.html android/app/src/main/assets/www
+
+      - name: Android app bridge
+        env:
+          DPR_SHOTS: build/screenshots/android
+        run: python3 tests/android_bridge.py
+
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: build/screenshots
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Only for the optional web fonts and Excel library when the build couldn't bundle them;
-         the portal itself and everyone's entries stay on the phone. -->
+    <!-- Microsoft sign-in and SharePoint sync, and the web fonts and Excel library if a build couldn't
+         bundle them. Without sync, the portal and everyone's entries stay on the phone. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -32,6 +32,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="content" />
                 <data android:mimeType="application/json" />
+            </intent-filter>
+            <!-- Invite links for SharePoint sync, passed on from a browser: dprportal://join?p=… -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="dprportal" android:host="join" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

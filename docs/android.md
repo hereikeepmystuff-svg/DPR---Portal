@@ -12,11 +12,11 @@ Every push to `main` builds the app on GitHub (the [Android app workflow](../.gi
 
 ## Getting the app
 
-**From a release (for site phones).** Open the repository's *Releases* page on the phone and tap the APK under *Assets*, e.g. `DPR-Portal-v2.3-build12.apk`.
+**From a release (for site phones).** Open the repository's *Releases* page on the phone and tap the APK under *Assets*, e.g. `DPR-Portal-v3.0-build12.apk`.
 
 **From any build (for trying a change).** Open *Actions → Android app*, pick a run and download the APK listed under *Artifacts*. Downloading it needs a GitHub sign-in.
 
-**Making a release.** On GitHub choose *Releases → Draft a new release*. Type a new tag such as `v2.4` (it must start with `v`) and publish. A few minutes later the workflow attaches the APK to the release, together with the portal itself as one offline file (`dpr_portal_v2.4.html`). Pushing a `v…` tag from git does the same and creates the release.
+**Making a release.** On GitHub choose *Releases → Draft a new release*. Type a new tag such as `v3.0` (it must start with `v`) and publish. A few minutes later the workflow attaches the APK to the release, together with the portal itself as one offline file (`dpr_portal_v3.0.html`). Pushing a `v…` tag from git does the same and creates the release.
 
 **Installing.** Open the downloaded APK on the phone.
 - The first time, Android asks whether the app you downloaded it with (Chrome, Files, WhatsApp) may install apps. Allow it, go back and tap *Install*.
@@ -99,6 +99,17 @@ Leaving keeps the app as it was, including anything typed but not saved. On the 
 
 **Where the data lives.** Entries stay in the app's storage on the phone. *Uninstall* and *Clear storage* delete them, so take full backups (*Settings → Data*). Android's own backup may bring the data back on a new phone, but don't rely on it. The app and Chrome on the same phone keep separate data. To move from one to the other, make a full backup in one and restore it in the other.
 
+## SharePoint sync in the app
+
+From v3.0 the app can keep the project in step through SharePoint. See [SharePoint sync](sharepoint.md).
+- **Signing in:** Microsoft's sign-in page opens inside the app. The back button returns to the portal.
+- **Address for IT:** IT registers the app's address once, `https://appassets.androidplatform.net/assets/www/index.html`, as a single-page application redirect URI.
+- **Invite links:**
+  - Opened in the phone's browser, an invite link offers **Open in the DPR Portal app**.
+  - Or, in the app, choose *Join with invite link* and paste it.
+  - Links made in the app point at the website, so they also work on laptops.
+- **Device rules:** if the organisation only allows sign-ins from approved apps or managed devices, the in-app sign-in may be refused. The website in the phone's browser is the alternative.
+
 ## Building it yourself
 
 You need JDK 17, the Android SDK (platform 35, build-tools 34) and Gradle 8.10.2. Android Studio provides the SDK and runs Gradle for you: open the `android` folder in it.
@@ -118,7 +129,7 @@ gradle assembleRelease      # signed with DPR_KEYSTORE_PATH etc. if set, else th
 
 | Variable | Use |
 |---|---|
-| `DPR_VERSION_NAME` | version shown in Android's app info (CI: portal version and run number, e.g. `2.3 (build 57)`) |
+| `DPR_VERSION_NAME` | version shown in Android's app info (CI: portal version and run number, e.g. `3.0 (build 57)`) |
 | `DPR_VERSION_CODE` | a number that must go up with every build (CI: minutes since 2026) |
 | `DPR_KEYSTORE_PATH`, `DPR_KEYSTORE_PASSWORD`, `DPR_KEY_ALIAS`, `DPR_KEY_PASSWORD` | the signing key |
 
@@ -138,7 +149,7 @@ That APK carries your project's data (BOQ, rates, the workbook), so build it on 
 | `android/app/…/MainActivity.java` | A full-screen WebView. It serves the packed portal from the app at `https://appassets.androidplatform.net/assets/www/index.html` (androidx.webkit `WebViewAssetLoader`), so browser storage, IndexedDB and Web Crypto behave as in Chrome. It also keeps the page clear of the status bar, navigation bar, camera cut-out and keyboard, writes saved files to Downloads, offers *Share* and *Open*, prints, opens incoming files and handles the back button. |
 | `android/bridge.js` | Added to the packed page. It sends the portal's file saves and printing to the app, opens incoming setup and entries files through the portal's own *Open setup file* and *Import entries files* flows, and handles the back button. It also adds touch and screen-size styles. In a normal browser it does nothing. |
 | `android/prepare_assets.py` | Copies a built portal into `android/app/src/main/assets/www/`, downloads its fonts (Latin subsets) and SheetJS into the app, and adds the bridge. The folder is generated and not committed. |
-| `.github/workflows/android.yml` | Two jobs. *App web layer* checks the packing and runs the bridge test, with screenshots. *Build the APK* builds, signs and names the APK, then uploads it or attaches it to the release. |
+| `.github/workflows/android.yml` | Builds the demo portal, packs it, then builds, signs and names the APK and uploads it or attaches it to the release. The packing and bridge tests run in `.github/workflows/tests.yml`, with screenshots. |
 
 Tests (see [development](development.md#tests)):
 

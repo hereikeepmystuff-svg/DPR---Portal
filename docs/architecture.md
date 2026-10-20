@@ -1,6 +1,8 @@
 # Architecture
 
-The portal is one HTML file: markup, styles and JavaScript, plus the project's data embedded as a JSON *seed*. There are no dependencies to install and no build step to run it. The only network use is optional: Google Fonts, and SheetJS from cdnjs for the summary workbook. Both have fallbacks.
+The portal is one HTML file: markup, styles and JavaScript, plus the project's data embedded as a JSON *seed*. There are no dependencies to install and no build step to run it. Network use is optional:
+- Google Fonts, and SheetJS from cdnjs for the summary workbook. Both have fallbacks, and the Android app and the website bundle them.
+- SharePoint sync (v3.0): Microsoft sign-in and Microsoft Graph.
 
 ## File layout (`src/portal.template.html`)
 
@@ -8,7 +10,7 @@ The portal is one HTML file: markup, styles and JavaScript, plus the project's d
 |---|---|
 | `<style>` | Design tokens on `:root` (neumorphic palette, shadows, radii, type), then components: header, toolbars, tabs, tables, pour grid, dialogs, settings, sign-in, day status, phone card layouts, print rules |
 | Markup | Header (period pill, user chip, version, settings), the day bar (date stepper, day status, export), the tabs and one `.panel` per tab, plus overlays (sign-in or lock, settings, in-page dialogs, toast, floating save) |
-| `<script>` | In order: version and changelog, in-page dialogs, the seed and storage, progress and locations, pour grid, entry page, structure tab, labour, machinery, material & staff, overview, site logs, printable DPR, the workbook engine (`DPRX`), periods, import wizard, export, settings, monthly plan, then the later modules: access (v2.1), team and files (v2.1), faster entry (v2.2), project flexibility (v2.3), and finally `INIT` |
+| `<script>` | In order: version and changelog, in-page dialogs, the seed and storage, progress and locations, pour grid, entry page, structure tab, labour, machinery, material & staff, overview, site logs, printable DPR, the workbook engine (`DPRX`), periods, import wizard, export, settings, monthly plan, then the later modules: access (v2.1), team and files (v2.1), faster entry (v2.2), project flexibility (v2.3), SharePoint sync (v3.0), and finally `INIT` |
 
 `const SEED = @@SEED@@;`, `const STORAGE_KEY = '@@STORAGE_KEY@@';` and `<title>@@TITLE@@</title>` are filled in by `tools/build.py`.
 
@@ -70,6 +72,43 @@ Forms on screen always belong to one context, held in `FORM`: the date, and for 
 - **Secrets.** Stored as salted SHA-256 (`crypto.subtle`).
 - **Sessions.** In `sessionStorage`, optionally remembered in `localStorage`.
 - **Setup and entries files.** `buildSetupPackage()`, `collectEntries()`, `mergeEntries()` (newest wins per record, using `stamps` and row `at`, with deletion markers) and `joinFromSetupFile()`.
+
+## SharePoint sync (v3.0)
+
+The module is `src/modules/sync.js`, patched in by `tools/history/build_v30.py`. The full description is in [SharePoint sync](sharepoint.md#9-technical-notes).
+
+**The folder.**
+- `dpr-project.json`: the setup package, the same shape as a setup file, written by planning managers.
+- `dpr-workbook.xlsx`: the workbook.
+- `entries/<YYYY-MM>__<device>.json`: what each device entered, per month.
+
+**Connection details.**
+- `CFG.sync` holds the client and tenant IDs, plus the drive and folder ids. It travels with the setup.
+- `tools/build.py --ms-client-id --ms-tenant --portal-url` can build defaults into a portal (`FACTORY.sync`).
+
+**Device-only state.** None of it is in `store` or in backups:
+- `dpr_ms_auth`: the Microsoft account and its tokens;
+- `dpr_sync_<projectId>`: the eTags already seen, content hashes already sent, and the last result;
+- `dpr_device_id`.
+
+**A sync (`syncNow`).**
+1. Pull the setup. When its eTag changed, apply it, unless this planning manager's own unsent change is newer.
+2. Pull the workbook.
+3. Pull every other device's changed entries files through `mergeEntries(…, {via:'sync'})`.
+4. Push the setup (planning managers, with `If-Match`; on 412 the newer setup wins).
+5. Push this device's months whose content hash changed.
+
+**Who sent what.**
+- Records stamped `via:'sync'` or `via:'setup'` came from elsewhere and are never sent back (`syncOwnByMonth`).
+- Removals that arrive by sync are marked the same way.
+
+**Triggers.** `persist()` is wrapped to schedule a sync a few seconds after each save. There is also a two-minute timer, and syncs on visibility, coming back online, and Sync now.
+
+**Applying received data.**
+- New entries re-render when nothing is half-typed (`syncIdle`).
+- A new setup reloads the page through `reloadKeepingPlace()`, which restores the tab, day, area and scroll position.
+
+**Sign-in.** Authorization code with PKCE, built on `crypto.subtle`; the redirect comes back in the URL fragment. Renewal uses the refresh token. When that has expired (24 hours for single-page apps), a hidden `prompt=none` frame tries first; a tiny script at the top of `<head>` stops that frame's copy of the page from loading anything else.
 
 ## The workbook engine (`DPRX`)
 

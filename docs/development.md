@@ -38,6 +38,7 @@ node --check /tmp/portal.js
 | `tests/project/test_daily_entry.py` | same | Day status, date stepper, unsaved-change guards, item search and filters, keyboard moves, soft checks, labour copy, machinery and staff prefill, export guard, sign-out guard, screen lock, site-log dates, phone cards |
 | `tests/project/test_entry_filters.py` | same | Planned-this-month filter, the ten-times-plan check, focus after save, `/` search, engineer and viewer views |
 | `tests/project/test_project_settings.py` | same | Words, money, modules, BOQ paste, renaming a tower (with the workbook alias on export and a stale entries file), floors & pours with custom words |
+| `tests/sync_e2e.py` | `build/portal.html` | SharePoint sync against `tests/mock_microsoft.py`, a stand-in for Microsoft sign-in and Graph: connecting, joining by invite link, entries and removals both ways, setup changes, offline, token expiry and silent renewal, refused access, a shared account, conflicting setups, app invite links, stopping, and moving a project with its built-in workbook onto sync with a full backup |
 | `tests/android_assets.py` | `build/portal.html` | Packing the portal into the Android app without a network: local fonts (each file once) and SheetJS, the bridge, the offline fallback and `--strict` |
 | `tests/android_bridge.py` | the packed app (`android/app/src/main/assets/www`) | The app bridge with a stand-in for Android: saving files, printing, the back button, the lock screen, setup and entries files opened from other apps, no sideways scrolling at five phone and tablet sizes |
 
@@ -46,6 +47,7 @@ python3 tests/smoke_demo.py                                  # demo build
 python3 tests/project/test_regression.py my_project.html     # a build made from your own seed and workbook
 
 python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html
+python3 tests/sync_e2e.py build/portal.html                  # SharePoint sync, against a stand-in for Microsoft
 python3 tests/android_assets.py                              # the Android packing, offline
 python3 android/prepare_assets.py build/portal.html android/app/src/main/assets/www
 python3 tests/android_bridge.py                              # the Android bridge
@@ -71,9 +73,29 @@ Outputs (downloads, screenshots) go to `tests/output/`, which git ignores. `DPR_
 
 The app in `android/` is a thin shell around whichever portal file is packed into it. A change to the portal reaches the app with the next build. Nothing in `android/` needs touching unless the portal's file, print, back-button or sign-in flows change; `tests/android_bridge.py` notices when they do.
 
-- **Every push to `main`** runs [`.github/workflows/android.yml`](../.github/workflows/android.yml), which checks the bridge and builds the APK. Download it from the run's *Artifacts*.
-- **Releasing:** after step 5 above, publish a GitHub release with a tag such as `v2.4`. The workflow attaches `DPR-Portal-v2.4-build<N>.apk` and the demo portal as `dpr_portal_v2.4.html` to it.
-- **Version:** the APK takes the portal's `APP_VERSION` and the run number, e.g. `2.4 (build 61)`. Its version code goes up with every build, so each APK installs over the last one.
+- **Every push to `main`** runs [`.github/workflows/android.yml`](../.github/workflows/android.yml), which builds the APK. Download it from the run's *Artifacts*. The app's tests run in `tests.yml` (below).
+- **Releasing:** after step 5 above, publish a GitHub release with a tag such as `v3.0`. The workflow attaches `DPR-Portal-v3.0-build<N>.apk` and the demo portal as `dpr_portal_v3.0.html` to it.
+- **Version:** the APK takes the portal's `APP_VERSION` and the run number, e.g. `3.0 (build 61)`. Its version code goes up with every build, so each APK installs over the last one.
 - **Signing:** the four `ANDROID_*` repository secrets, set up once. See [android.md](android.md#the-signing-key).
 
 Building locally, with your own project, and how the parts fit: [android.md](android.md#building-it-yourself).
+
+## The website and the tests on GitHub
+
+- **[`.github/workflows/tests.yml`](../.github/workflows/tests.yml)** runs every browser test on each push and pull request: smoke, SharePoint sync, and the Android packing and bridge.
+- **[`.github/workflows/pages.yml`](../.github/workflows/pages.yml)** publishes the portal at `https://<owner>.github.io/<repository>/` with GitHub Pages. It uses `android/prepare_assets.py --web`, which bundles the fonts and SheetJS and adds a service worker for offline use and an install manifest. Pages must be switched on once: *Settings → Pages → Source: GitHub Actions*.
+- **Microsoft app registration:** the repository variables `DPR_MS_CLIENT_ID` and `DPR_MS_TENANT` build it into the website and the APK. See [SharePoint sync](sharepoint.md).
+
+## How v3.0 was made
+
+`tools/history/build_v30.py` turns the v2.3 template into v3.0. It inserts `src/modules/sync.js` and `sync.css`, and makes small asserted changes to sign-in, Team & access, My account, the header, merging and the changelog.
+
+To change the sync module and rebuild the template from v2.3:
+
+```bash
+git show b26e2df:src/portal.template.html > src/portal.template.html   # the last v2.3 template
+python3 tools/history/build_v30.py
+```
+
+Once v3.0 is committed, edit `src/portal.template.html` directly, as for earlier versions.
+

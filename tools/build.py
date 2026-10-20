@@ -16,6 +16,10 @@ Examples
   # embed (or replace) the project's DPR workbook so exports write straight into it
   python3 tools/build.py --seed seeds/private/my_project.json --workbook DPR.xlsx --out my_project_portal.html
 
+  # SharePoint sync built in: engineers only sign in (see docs/sharepoint.md)
+  python3 tools/build.py --seed src/seeds/demo.json --out build/portal.html \
+      --ms-client-id 1a2b3c4d-0000-0000-0000-000000000000 --portal-url https://example.github.io/DPR---Portal/
+
 Build-only keys in the seed (all optional): storage_key, page_title, workbook_name.
 """
 import argparse, base64, json, pathlib, re, sys
@@ -36,6 +40,9 @@ def main():
     ap.add_argument('--workbook', help='project DPR workbook (.xlsx) to embed; replaces any workbook in the seed')
     ap.add_argument('--storage-key', help="browser storage key; changing it gives the file a fresh, empty store")
     ap.add_argument('--title', help='browser tab title')
+    ap.add_argument('--ms-client-id', help='SharePoint sync: the Application (client) ID registered for the portal in Microsoft Entra ID')
+    ap.add_argument('--ms-tenant', help='SharePoint sync: the directory (tenant) ID or domain; default "organizations" (any work account)')
+    ap.add_argument('--portal-url', help='SharePoint sync: the web address the portal is published at; invite links point there')
     a = ap.parse_args()
 
     seed = json.loads(pathlib.Path(a.seed).read_text(encoding='utf-8'))
@@ -49,6 +56,13 @@ def main():
         meta['workbook_name'] = wb.name
     if meta.get('workbook_name') and seed.get('template_b64'):
         seed['workbook_name'] = meta['workbook_name']
+
+    sync = dict(seed.get('sync') or {})
+    for key, value in (('clientId', a.ms_client_id), ('tenant', a.ms_tenant), ('portalUrl', a.portal_url)):
+        if value:
+            sync[key] = value.strip()
+    if sync:
+        seed['sync'] = sync
 
     name = (seed.get('project') or {}).get('name') or 'Project'
     storage_key = a.storage_key or meta.get('storage_key') or f"dpr_{slug(name)}_v2"
@@ -67,7 +81,8 @@ def main():
     out.write_text(html, encoding='utf-8')
     print(f'built {out} ({len(html):,} chars) · storage key {storage_key} · '
           f'{len(seed["items"])} BOQ items · {len(seed["towers"])} areas · '
-          f'workbook: {"embedded" if seed.get("template_b64") else "none"}')
+          f'workbook: {"embedded" if seed.get("template_b64") else "none"}'
+          + (f' · SharePoint app {sync.get("clientId", "?")}' if sync.get('clientId') else ''))
 
 
 if __name__ == '__main__':
